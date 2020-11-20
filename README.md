@@ -12,5 +12,12 @@ origin  https://github.com/Azamat7/GA-based-perturbations.git (push)
 Before writing any code, make sure local repo is up to date with origin
 ```
 $ git fetch origin
-$ git merge origin/master
+$ git merge origin/main
+```
+
+To push
+```
+$ git add .
+$ git commit -m "commit-message"
+$ git push -u origin main
 ```
