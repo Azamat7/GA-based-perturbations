@@ -21,3 +21,18 @@ $ git add .
 $ git commit -m "commit-message"
 $ git push -u origin main
 ```
+
+Better to work inside virtual env. To open `venv`
+```
+python3 -m venv venv
+```
+
+To activate
+```
+source venv/bin/activate
+```
+
+Install `requirements` after activating
+```
+pip3 install -r requirements.txt
+```
