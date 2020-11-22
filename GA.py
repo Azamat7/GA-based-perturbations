@@ -3,65 +3,81 @@ import numpy
 import PIL
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
+
+
 class GA:
     def __init__(self, model, image, threshold):
         pass
     
     def get_true_label(self):
-        """TODO
+        """TODO: zhanto and aza
+        identify and store the original image classification
         """
         pass
 
     def initialize_population(self):
-        """TODO
+        """TODO: zhans and mukha
+        generate POPULATION_SIZE number of parents
         """
         pass
 
     def compute_fitness(self):
-        """TODO
+        """TODO: zhanto and aza
+        fitness function
         """
         pass
     
     def crossover(self, image1, image2):
-        """TODO
+        """TODO: zhans and mukha
+        generate 1 or 2 offsprings from 2 parents
+        uniformal selection of pixels
+        image: numpy array
         """
         pass
     
     def mutate(self, image):
-        """TODO
+        """TODO: zhans and mukha
+        randomly change certain pixels
+        image: numpy array
         """
         pass
 
     def next_generation(self):
-        """TODO
+        """TODO: zhans and mukha
+        design selection and crossover, then implement
         """
         pass
     
     def get_perturbations(self):
-        """TODO
+        """TODO: zhanto and aza
+        combine all functions together
         """
         pass
     
 class Model:
     def __init__(self, model, perturbations):
-        """TODO
+        """TODO: zhanto and aza
         1) only perturbations are used for retraining
         2) train data + perturbations are used for retraining
         """
         pass
     
     def retrain_model(self):
-        """TODO
+        """TODO: zhanto and aza
+        retrain the model with new images
         """
         pass
     
     def evaluate_model(self):
-        """TODO
+        """TODO: zhanto and aza
         Evaluated on whole test data
         """
         pass
 
 if __name__ == "__main__":
+    """TODO: zhanto and aza
+    uncomment and implement the flow
+    """
     # parser = argparse.ArgumentParser(description='GA-based adversarial perturbation generator')
     # parser.add_argument('model_name', type=str,
     #                 help='Required model name argument')
