@@ -48,7 +48,7 @@ class GA:
         multiple.
         """
         for member_count in range(self.population_size):
-            self.population_size.append(generate_random_modified_image)
+            self.population.append(generate_random_modified_image)
         pass
 
     def compute_fitness(self):
@@ -71,7 +71,9 @@ class GA:
         Afterwards, apply mutation and add
         the offspring to the current population.
         """
-        pass
+        offspring = numpy.copy(image)
+        self.mutate(offspring)
+        return offspring
     
     def mutate(self, image):
         """TODO: zhans and mukha
