@@ -3,10 +3,18 @@ import numpy
 import PIL
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
+import random
 
+image = None
+image_size = None
+max_percent_changed = 0.1 # 10%
+max_pixels_changed = image_size * max_percent_changed
+change_pixel_by = 1.1
 
 class GA:
     def __init__(self, model, image, threshold):
+        self.population = []
+        self.population_size = 100
         pass
     
     def get_true_label(self):
@@ -15,8 +23,23 @@ class GA:
         """
         pass
 
+    def generate_random_modified_image(self):
+        """ TODO: mukha
+        generates new copy of an image with random pixels modified
+        """
+        new_image = numpy.copy(image)
+        for change_count in range(max_pixels_changed):
+            x_coordinate = random.randint(0, 31) # TODO: change 31 to some other variable. 31 is hard coded.
+            y_coordinate = random.randint(0, 31) # TODO: change 31 to some other variable. 31 is hard coded.
+            red = min(new_image[x_coordinate][y_coordinate][0] * change_pixel_by, 1.0)
+            green = min(new_image[x_coordinate][y_coordinate][1] * change_pixel_by, 1.0)
+            blue = min(new_image[x_coordinate][y_coordinate][2] * change_pixel_by, 1.0)
+            new_pixel = [red, green, blue]
+            new_image[x_coordinate][y_coordinate][:] = new_pixel
+        return new_image
+
     def initialize_population(self):
-        """TODO: zhans and mukha
+        """TODO: mukha
         generates POPULATION_SIZE number of parents.
         For each new parent, we only change at most
         fixed number of pixels, maxPixelsChanged.
@@ -24,6 +47,8 @@ class GA:
         original image's pixel by some constant
         multiple.
         """
+        for member_count in range(self.population_size):
+            self.population_size.append(generate_random_modified_image)
         pass
 
     def compute_fitness(self):
@@ -33,7 +58,7 @@ class GA:
         pass
     
     def crossover(self, image1, image2):
-        """TODO: zhans and mukha
+        """TODO: mukha
         generates 1 offspring from 2 parents
         uniformal selection of pixels
         image: numpy array
