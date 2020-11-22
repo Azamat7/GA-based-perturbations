@@ -35,7 +35,7 @@ class GA:
             green = min(new_image[x_coordinate][y_coordinate][1] * change_pixel_by, 1.0)
             blue = min(new_image[x_coordinate][y_coordinate][2] * change_pixel_by, 1.0)
             new_pixel = [red, green, blue]
-            new_image[x_coordinate][y_coordinate][:] = new_pixel
+            new_image[x_coordinate][y_coordinate][:] = new_pixel # not sure if it is correct way of assigning
         return new_image
 
     def initialize_population(self):
@@ -48,7 +48,8 @@ class GA:
         multiple.
         """
         for member_count in range(self.population_size):
-            self.population.append(generate_random_modified_image)
+            new_member = self.generate_random_modified_image
+            self.population.append(new_member)
         pass
 
     def compute_fitness(self):
