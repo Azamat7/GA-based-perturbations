@@ -17,7 +17,12 @@ class GA:
 
     def initialize_population(self):
         """TODO: zhans and mukha
-        generate POPULATION_SIZE number of parents
+        generates POPULATION_SIZE number of parents.
+        For each new parent, we only change at most
+        fixed number of pixels, maxPixelsChanged.
+        Each modified pixel would differ from the
+        original image's pixel by some constant
+        multiple.
         """
         pass
 
@@ -29,9 +34,17 @@ class GA:
     
     def crossover(self, image1, image2):
         """TODO: zhans and mukha
-        generate 1 or 2 offsprings from 2 parents
+        generates 1 offspring from 2 parents
         uniformal selection of pixels
         image: numpy array
+
+        We first create copy of unmodified
+        original image.
+        We select at most maxPixelsChanged
+        number of modified pixels from either
+        parent and add to the offspring.
+        Afterwards, apply mutation and add
+        the offspring to the current population.
         """
         pass
     
