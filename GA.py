@@ -64,7 +64,7 @@ class GA:
         pass
 
     def get_changed_pixel_coordinates(self, image):
-        """
+        """ TODO: mukha
         retrieves coordinates of the modified pixels
         """
         changed_pixels_coordinates = []
@@ -113,14 +113,14 @@ class GA:
         return offspring
     
     def mutate(self, image):
-        """TODO: zhans and mukha
+        """TODO: zhans
         randomly change certain pixels
         image: numpy array
         """
         pass
 
     def next_generation(self):
-        """TODO: zhans and mukha
+        """TODO: zhans
         design selection and crossover, then implement
         """
         pass
