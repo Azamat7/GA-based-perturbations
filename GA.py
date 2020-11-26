@@ -10,13 +10,17 @@ class GA:
         # image: numpy array
         self.original_image = image
         self.image_shape = image.shape
-        self.width = self.image_shape[0]
-        self.height = self.image_shape[1]
+        # print(self.image_shape)
+        self.width = self.image_shape[1]
+        self.height = self.image_shape[2]
+        # print(self.width)
+        # print(self.height)
         self.max_percent_changed = 0.1 # 10%
-        self.max_pixels_changed = image_size * max_percent_changed
+        self.total_pixel_number = self.width * self.height
+        self.max_pixels_changed = int(self.total_pixel_number * self.max_percent_changed)
         self.change_pixel_by = 1.1
         self.population = []
-        self.population_size = 100
+        self.population_size = threshold
         pass
     
     def get_true_label(self):
@@ -31,14 +35,14 @@ class GA:
         """
         new_image = numpy.copy(image)
         # Main logic lies here. Modification may be required
-        for change_count in range(max_pixels_changed):
+        for change_count in range(self.max_pixels_changed):
             x_coordinate = random.randint(0, self.width - 1)
             y_coordinate = random.randint(0, self.height - 1)
-            red = min(new_image[x_coordinate][y_coordinate][0] * change_pixel_by, 1.0)
-            green = min(new_image[x_coordinate][y_coordinate][1] * change_pixel_by, 1.0)
-            blue = min(new_image[x_coordinate][y_coordinate][2] * change_pixel_by, 1.0)
+            red = min(new_image[0][x_coordinate][y_coordinate][0] * self.change_pixel_by, 1.0)
+            green = min(new_image[0][x_coordinate][y_coordinate][1] * self.change_pixel_by, 1.0)
+            blue = min(new_image[0][x_coordinate][y_coordinate][2] * self.change_pixel_by, 1.0)
             new_pixel = [red, green, blue]
-            new_image[x_coordinate][y_coordinate][:] = new_pixel # not sure if it is correct way of assigning
+            new_image[0][x_coordinate][y_coordinate] = new_pixel # not sure if it is correct way of assigning
         # End of main logic
         
         return new_image
@@ -53,7 +57,7 @@ class GA:
         multiple.
         """
         for member_count in range(self.population_size):
-            new_member = self.generate_random_modified_image
+            new_member = self.generate_random_modified_image()
             self.population.append(new_member)
         pass
 
@@ -70,7 +74,8 @@ class GA:
         changed_pixels_coordinates = []
         for x_coordinate in range(self.width):
             for y_coordinate in range(self.height):
-                if image[x_coordinate][y_coordinate] != self.original_image[x_coordinate][y_coordinate]:
+                comparison = image[0][x_coordinate][y_coordinate] != self.original_image[0][x_coordinate][y_coordinate]
+                if comparison.any():
                     changed_pixels_coordinates.append((x_coordinate, y_coordinate))
 
         return changed_pixels_coordinates
@@ -92,24 +97,30 @@ class GA:
         offspring = numpy.copy(image)
 
         # Main logic lies here. Modification may be required
-        first_image_modified_pixels = self.get_changed_pixel_coordinates(image1)
-        second_image_modified_pixels = self.get_changed_pixel_coordinates(image2)
+        first_image_modified_pixels = numpy.array(self.get_changed_pixel_coordinates(image1))
+        second_image_modified_pixels = numpy.array(self.get_changed_pixel_coordinates(image2))
         for change_count in range(self.max_pixels_changed):
             first_or_second = random.randint(0, 1)
             selected_image = None
             pixel_coordinate = None
+            selected_pixels = None
+            pixel_index = None
             if first_or_second == 0: # take pixel from first image
-                pixel_coordinate = numpy.random.choice(first_image_modified_pixels)
+                selected_pixels = first_image_modified_pixels
+                pixel_index = numpy.random.choice(len(first_image_modified_pixels))
                 selected_image = image1
             else: # take pixel from second image
-                pixel_coordinate = numpy.random.choice(second_image_modified_pixels)
+                selected_pixels = second_image_modified_pixels
+                pixel_index = numpy.random.choice(len(second_image_modified_pixels))
+                # pixel_coordinate = numpy.random.choice(second_image_modified_pixels)
                 selected_image = image2
+            pixel_coordinate = selected_pixels[pixel_index]
             x_coordinate = pixel_coordinate[0]
             y_coordinate = pixel_coordinate[1]
-            offspring[x_coordinate][y_coordinate] = selected_image[x_coordinate][y_coordinate]
+            offspring[0][x_coordinate][y_coordinate] = selected_image[0][x_coordinate][y_coordinate]
         # End of main logic
 
-        self.mutate(offspring)
+        # self.mutate(offspring)
         return offspring
     
     def mutate(self, image):
@@ -188,3 +199,16 @@ if __name__ == "__main__":
     # Get predicted class name
     index = tf.math.argmax(pred, axis=1).numpy()[0]
     print("Predicted class is {}".format(class_names[index]))
+
+    # ga = GA(model, image, 100)
+
+    # random_image = ga.generate_random_modified_image()
+    # im = PIL.Image.fromarray((random_image*255.0).astype(numpy.uint8)[0])
+    # im.save("/path/random_image.png")
+    # # print(ga.get_changed_pixel_coordinates(random_image))
+
+    # ga.initialize_population()
+    # offspring = ga.crossover(ga.population[0], ga.population[1])
+    # offspringImage = PIL.Image.fromarray((offspring*255.0).astype(numpy.uint8)[0])
+    # offspringImage.save("/path/offspring_image.png")
+    # # print(ga.get_changed_pixel_coordinates(offspring))
