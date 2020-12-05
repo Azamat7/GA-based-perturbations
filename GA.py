@@ -21,7 +21,8 @@ class GA:
         self.change_pixel_by = 1.1
         self.population = []
         self.population_size = threshold
-        pass
+        self.model = model
+        self.original_fitness = self.predict(image)
     
     def get_true_label(self):
         """TODO: zhanto and aza
@@ -61,11 +62,35 @@ class GA:
             self.population.append(new_member)
         pass
 
-    def compute_fitness(self):
-        """TODO: zhanto and aza
-        fitness function
+    def normalize(self, pred):
         """
-        pass
+        Normalize model prediction result
+        Returns normalized array
+        """
+        min_pred = numpy.amin(pred)
+        pred = pred - min_pred if min_pred < 0 else pred
+        return tf.keras.utils.normalize(pred, axis=-1, order=1)
+
+    def predict(self, image):
+        """
+        Returns index with highest probabiltiy and probability
+        ex: (1, 0.33)
+        """
+        pred = self.model.predict(image)
+        normalized = self.normalize(pred)
+        index = tf.math.argmax(normalized, axis=1).numpy()[0]
+        return index, normalized[0][index]
+
+    def compute_fitness(self, image):
+        """
+        Returns if the highest probability corresponds to the original index
+        and the probability
+        ex: (False, 0.15)
+        """
+        index, probability = self.predict(image)
+        if index != self.original_fitness[0]:
+            return False, probability
+        return True, probability
 
     def get_changed_pixel_coordinates(self, image):
         """ TODO: mukha
