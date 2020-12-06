@@ -153,7 +153,7 @@ class GA:
             offspring[0][x_coordinate][y_coordinate] = selected_image[0][x_coordinate][y_coordinate]
         # End of main logic
 
-        # self.mutate(offspring)
+        self.mutate(offspring)
         return offspring
     
     def mutate(self, image):
@@ -170,6 +170,7 @@ class GA:
                     blue = min(image[0][x][y][2] * self.change_pixel_by, 1.0)
                     image[0][x][y][:]=[red, green, blue]
         return image
+
     def sort(self):
         # used only once before creating offsprings
         fitness=[]
@@ -198,6 +199,7 @@ class GA:
 
     def selection(self):    
 	    return self.population[0], self.population[1]
+
     def next_generation(self):
         """TODO: zhans
         design selection and crossover, then implement
