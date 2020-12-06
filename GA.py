@@ -161,13 +161,57 @@ class GA:
         randomly change certain pixels
         image: numpy array
         """
-        pass
+        prob=0.003
+        for x in range (self.width):
+            for y in range (self.height):
+                if random.uniform(0, 1)<prob:
+                    red = min(image[0][x][y][0] * self.change_pixel_by, 1.0)
+                    green = min(image[0][x][y][1] * self.change_pixel_by, 1.0)
+                    blue = min(image[0][x][y][2] * self.change_pixel_by, 1.0)
+                    image[0][x][y][:]=[red, green, blue]
+        return image
+    def sort(self):
+        # used only once before creating offsprings
+        fitness=[]
+        pop=[]
+        for image in self.population:
+            fitness.append((image,self.compute_fitness(image)))
+	    
+        result = sorted(fitness, key=lambda x: x[1][1], reverse=False)
+        for el in result:
+            pop.append(el[0])
+        self.population=pop
+        return result
 
+    def adding_offspring(self,index,offspring,probability,result):
+        # after each iteration adds the offspring to the population
+        pop=[]
+        for i in range (len(result)):
+            if result[i][1][1]>probability:
+                index=i
+                break
+        result=result[:i]+[(offspring,(index,probability))]+result[i:]
+        for el in result[:self.population_size]:
+            pop.append(el[0])
+        self.population=pop
+        return result[:self.population_size]
+
+    def selection(self):    
+	    return self.population[0], self.population[1]
     def next_generation(self):
         """TODO: zhans
         design selection and crossover, then implement
         """
-        pass
+        result=self.sort()
+        index=True
+        while index!=False:
+            parent1,parent2=self.selection()
+            offspring1=self.crossover(parent1,parent2)
+            offspring1=self.mutate(offspring1)
+            index, probability=self.compute_fitness(offspring1)
+            result=self.adding_offspring(index,offspring1,probability,result)
+
+        return offspring1
     
     def get_perturbations(self):
         """TODO: zhanto and aza
