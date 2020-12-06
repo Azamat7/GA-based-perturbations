@@ -10,25 +10,27 @@ class GA:
         # image: numpy array
         self.original_image = image
         self.image_shape = image.shape
-        # print(self.image_shape)
         self.width = self.image_shape[1]
         self.height = self.image_shape[2]
-        # print(self.width)
-        # print(self.height)
+
         self.max_percent_changed = 0.1 # 10%
         self.total_pixel_number = self.width * self.height
         self.max_pixels_changed = int(self.total_pixel_number * self.max_percent_changed)
+
         self.change_pixel_by = 1.1
+
         self.population = []
         self.population_size = threshold
+
         self.model = model
-        self.original_fitness = self.predict(image)
+        self.set_true_label()
     
-    def get_true_label(self):
-        """TODO: zhanto and aza
-        identify and store the original image classification
+    def set_true_label(self):
         """
-        pass
+        Identifies and stores the original image classification
+        """
+        index, prob = self.predict(self.original_image)
+        self.true_label = index
 
     def generate_random_modified_image(self):
         """ TODO: mukha
@@ -88,7 +90,7 @@ class GA:
         ex: (False, 0.15)
         """
         index, probability = self.predict(image)
-        if index != self.original_fitness[0]:
+        if index != self.true_label:
             return False, probability
         return True, probability
 
@@ -229,7 +231,7 @@ if __name__ == "__main__":
 
     # random_image = ga.generate_random_modified_image()
     # im = PIL.Image.fromarray((random_image*255.0).astype(numpy.uint8)[0])
-    # im.save("/path/random_image.png")
+    # im.save("random_image.png")
     # # print(ga.get_changed_pixel_coordinates(random_image))
 
     # ga.initialize_population()
