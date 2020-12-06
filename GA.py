@@ -17,13 +17,17 @@ class GA:
         self.total_pixel_number = self.width * self.height
         self.max_pixels_changed = int(self.total_pixel_number * self.max_percent_changed)
 
-        self.change_pixel_by = 1.1
+        self.change_pixel_by_list = [0.8, 0.9, 1.1, 1.2]
 
         self.population = []
         self.population_size = threshold
 
         self.model = model
         self.set_true_label()
+
+    def get_change_pixel_by(self):
+        index = numpy.random.choice(len(self.change_pixel_by_list))
+        return self.change_pixel_by_list[index]
     
     def set_true_label(self):
         """
@@ -32,18 +36,19 @@ class GA:
         index, prob = self.predict(self.original_image)
         self.true_label = index
 
-    def generate_random_modified_image(self):
+    def generate_random_modified_image(self, max_pixels_changed):
         """ TODO: mukha
         generates new copy of an image with random pixels modified
         """
         new_image = numpy.copy(image)
         # Main logic lies here. Modification may be required
-        for change_count in range(self.max_pixels_changed):
+        for change_count in range(max_pixels_changed):
             x_coordinate = random.randint(0, self.width - 1)
             y_coordinate = random.randint(0, self.height - 1)
-            red = min(new_image[0][x_coordinate][y_coordinate][0] * self.change_pixel_by, 1.0)
-            green = min(new_image[0][x_coordinate][y_coordinate][1] * self.change_pixel_by, 1.0)
-            blue = min(new_image[0][x_coordinate][y_coordinate][2] * self.change_pixel_by, 1.0)
+            change_pixel_by = self.get_change_pixel_by()
+            red = min(new_image[0][x_coordinate][y_coordinate][0] * change_pixel_by, 1.0)
+            green = min(new_image[0][x_coordinate][y_coordinate][1] * change_pixel_by, 1.0)
+            blue = min(new_image[0][x_coordinate][y_coordinate][2] * change_pixel_by, 1.0)
             new_pixel = [red, green, blue]
             new_image[0][x_coordinate][y_coordinate] = new_pixel # not sure if it is correct way of assigning
         # End of main logic
@@ -59,8 +64,9 @@ class GA:
         original image's pixel by some constant
         multiple.
         """
+        initial_max_pixels_changed = int(self.total_pixel_number * 0.03) # 3% of total pixels changed for initial population
         for member_count in range(self.population_size):
-            new_member = self.generate_random_modified_image()
+            new_member = self.generate_random_modified_image(initial_max_pixels_changed)
             self.population.append(new_member)
         pass
 
