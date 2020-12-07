@@ -198,11 +198,10 @@ class GA:
         return result[:self.population_size]
 
     def selection(self, result):    
-        parents=random.sample(result,2)
-        if parents[0][1][1]>parents[1][1][1]:
-            return parents[1][0]
-        else:
-            return parents[0][0]
+        parents=random.sample(result,4)
+        output = sorted(parents, key=lambda x: x[1][1], reverse=False)
+        
+        return output[0][0]
 
 
     def next_generation(self):
