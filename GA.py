@@ -197,8 +197,13 @@ class GA:
         self.population=pop
         return result[:self.population_size]
 
-    def selection(self):    
-	    return self.population[0], self.population[1]
+    def selection(self, result):    
+        parents=random.sample(result,2)
+        if parents[0][1][1]>parents[1][1][1]:
+            return parents[1][0]
+        else:
+            return parents[0][0]
+
 
     def next_generation(self):
         """TODO: zhans
@@ -207,7 +212,8 @@ class GA:
         result=self.sort()
         index=True
         while index!=False:
-            parent1,parent2=self.selection()
+            parent1=self.selection(result)
+            parent2=self.selection(result)
             offspring1=self.crossover(parent1,parent2)
             offspring1=self.mutate(offspring1)
             index, probability=self.compute_fitness(offspring1)
