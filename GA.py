@@ -18,7 +18,7 @@ class GA:
         self.total_pixel_number = self.width * self.height
         self.max_pixels_changed = int(self.total_pixel_number * self.max_percent_changed)
 
-        self.change_pixel_by_list = [0.8, 0.9, 1.1, 1.2]
+        self.change_pixel_by_list = [0.1, 0.2, 1.8, 1.9]
 
         self.population = []
         self.population_size = threshold
@@ -178,54 +178,21 @@ class GA:
         image[image>=1.0] = 1.0
         return image
 
-    def sort(self):
-        # used only once before creating offsprings
-        fitness=[]
-        pop=[]
-        for i in range(self.population_size):
-            fitness.append((self.population[i], self.fitnesses[i]))
-	    
-        result = sorted(fitness, key=lambda x: x[1][1], reverse=False)
-        for el in result:
-            pop.append(el[0])
-        self.population=pop
-        return result
-
-    def adding_offspring(self,index,offspring,probability,result):
-        # after each iteration adds the offspring to the population
-        pop=[]
-        for i in range (len(result)):
-            if result[i][1][1]>probability:
-                index=i
-                break
-        result=result[:i]+[(offspring,(index,probability))]+result[i:]
-        for el in result[:self.population_size]:
-            pop.append(el[0])
-        self.population=pop
-        return result[:self.population_size]
-
-    def selection(self, result):    
-        parents=random.sample(result,4)
-        output = sorted(parents, key=lambda x: x[1][1], reverse=False)
-        
-        return output[0][0]
-
     def next_generation(self):
-        """TODO: zhans
-        design selection and crossover, then implement
         """
-        result=self.sort()
-        index=True
-        while index!=False:
-            print('Stuck here?')
-            parent1=self.selection(result)
-            parent2=self.selection(result)
-            offspring1=self.crossover(parent1,parent2)
-            offspring1=self.mutate(offspring1)
-            index, probability=self.compute_fitness(offspring1)
-            result=self.adding_offspring(index,offspring1,probability,result)
+        Assumes that self.population is sorted by fitness function
+        """
+        for i in range(self.population_size//4):
+            parent1 = self.population[i * 2]
+            parent2 = self.population[i * 2 + 1]
+            offspring = self.crossover(parent1, parent2)
+            offspring = self.mutate(offspring)
+            
+            self.population.append(offspring)
+            self.fitnesses.append(self.compute_fitness(offspring))
 
-        return offspring1
+        generation = sorted(zip(self.population, self.fitnesses), key=lambda x: x[1][1])
+        self.population = [x[0] for x in generation[:self.population_size]]
     
     def get_perturbations(self):
         """TODO: zhanto and aza
@@ -304,8 +271,8 @@ if __name__ == "__main__":
     index = tf.math.argmax(pred, axis=1).numpy()[0]
     print("Predicted class is {}".format(class_names[index]))
 
-    ga = GA(model, image, 100, 10)
-    # ga.get_perturbations()
+    ga = GA(model, image, 100, 20)
+    ga.get_perturbations()
 
     # random_image = ga.generate_random_modified_image(0.03)
     # print(len(ga.get_changed_pixel_coordinates(random_image)))
