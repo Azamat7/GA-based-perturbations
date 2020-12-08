@@ -6,7 +6,7 @@ from tensorflow.keras import datasets, layers, models
 import random
 
 class GA:
-    def __init__(self, model, image, threshold):
+    def __init__(self, model, image, threshold, max_iterations):
         # image: numpy array
         self.original_image = image
         self.image_shape = image.shape
@@ -21,6 +21,7 @@ class GA:
 
         self.population = []
         self.population_size = threshold
+        self.max_iterations = max_iterations
 
         self.model = model
         self.set_true_label()
@@ -68,7 +69,6 @@ class GA:
         for member_count in range(self.population_size):
             new_member = self.generate_random_modified_image(initial_max_pixels_changed)
             self.population.append(new_member)
-        pass
 
     def normalize(self, pred):
         """
@@ -99,6 +99,16 @@ class GA:
         if index != self.true_label:
             return False, probability
         return True, probability
+    
+    def population_fitness(self):
+        self.fitnesses = [self.compute_fitness(image) for image in self.population]
+
+    def check_population(self):
+        for i in range(self.population_size):
+            if not self.fitnesses[i][0]:
+                self.adversarial = self.population[i]
+                return True
+        return False
 
     def get_changed_pixel_coordinates(self, image):
         """ TODO: mukha
@@ -131,8 +141,10 @@ class GA:
 
         # Main logic lies here. Modification may be required
         first_image_modified_pixels = numpy.array(self.get_changed_pixel_coordinates(image1))
+        l1 = len(first_image_modified_pixels)
         second_image_modified_pixels = numpy.array(self.get_changed_pixel_coordinates(image2))
-        for change_count in range(self.max_pixels_changed):
+        l2 = len(second_image_modified_pixels)
+        for change_count in range(max(l1, l2)):
             first_or_second = random.randint(0, 1)
             selected_image = None
             pixel_coordinate = None
@@ -161,13 +173,13 @@ class GA:
         randomly change certain pixels
         image: numpy array
         """
-        prob=0.003
+        prob=0.01
         for x in range (self.width):
             for y in range (self.height):
                 if random.uniform(0, 1)<prob:
-                    red = min(image[0][x][y][0] * self.change_pixel_by, 1.0)
-                    green = min(image[0][x][y][1] * self.change_pixel_by, 1.0)
-                    blue = min(image[0][x][y][2] * self.change_pixel_by, 1.0)
+                    red = min(image[0][x][y][0] * self.get_change_pixel_by(), 1.0)
+                    green = min(image[0][x][y][1] * self.get_change_pixel_by(), 1.0)
+                    blue = min(image[0][x][y][2] * self.get_change_pixel_by(), 1.0)
                     image[0][x][y][:]=[red, green, blue]
         return image
 
@@ -175,8 +187,8 @@ class GA:
         # used only once before creating offsprings
         fitness=[]
         pop=[]
-        for image in self.population:
-            fitness.append((image,self.compute_fitness(image)))
+        for i in range(self.population_size):
+            fitness.append((self.population[i], self.fitnesses[i]))
 	    
         result = sorted(fitness, key=lambda x: x[1][1], reverse=False)
         for el in result:
@@ -203,7 +215,6 @@ class GA:
         
         return output[0][0]
 
-
     def next_generation(self):
         """TODO: zhans
         design selection and crossover, then implement
@@ -224,7 +235,19 @@ class GA:
         """TODO: zhanto and aza
         combine all functions together
         """
-        pass
+        for i in range(self.max_iterations):
+            print("Iteration {}".format(i+1))
+            self.initialize_population()
+            self.population_fitness()
+            if self.check_population():
+                break
+            self.next_generation()
+        
+        if hasattr(self, 'adversarial'):
+            im = PIL.Image.fromarray((self.adversarial*255.0).astype(numpy.uint8)[0])
+            im.save("adversarial.png")
+        else:
+            print("Could not find any adversarial :(")
     
 class Model:
     def __init__(self, model, perturbations):
@@ -284,7 +307,8 @@ if __name__ == "__main__":
     index = tf.math.argmax(pred, axis=1).numpy()[0]
     print("Predicted class is {}".format(class_names[index]))
 
-    # ga = GA(model, image, 100)
+    ga = GA(model, image, 100, 10)
+    ga.get_perturbations()
 
     # random_image = ga.generate_random_modified_image()
     # im = PIL.Image.fromarray((random_image*255.0).astype(numpy.uint8)[0])
@@ -292,7 +316,10 @@ if __name__ == "__main__":
     # # print(ga.get_changed_pixel_coordinates(random_image))
 
     # ga.initialize_population()
+    # print(len(ga.get_changed_pixel_coordinates(ga.population[0])))
+    # print(len(ga.get_changed_pixel_coordinates(ga.population[1])))
     # offspring = ga.crossover(ga.population[0], ga.population[1])
+    # print(len(ga.get_changed_pixel_coordinates(offspring)))
     # offspringImage = PIL.Image.fromarray((offspring*255.0).astype(numpy.uint8)[0])
-    # offspringImage.save("/path/offspring_image.png")
-    # # print(ga.get_changed_pixel_coordinates(offspring))
+    # offspringImage.save("random_image_crossover.png")
+    # print(ga.get_changed_pixel_coordinates(offspring))
