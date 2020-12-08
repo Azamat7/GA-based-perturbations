@@ -37,24 +37,18 @@ class GA:
         index, prob = self.predict(self.original_image)
         self.true_label = index
 
-    def generate_random_modified_image(self, max_pixels_changed):
+    def generate_random_modified_image(self, prob):
         """ TODO: mukha
         generates new copy of an image with random pixels modified
         """
-        new_image = numpy.copy(image)
-        # Main logic lies here. Modification may be required
-        for change_count in range(max_pixels_changed):
-            x_coordinate = random.randint(0, self.width - 1)
-            y_coordinate = random.randint(0, self.height - 1)
-            change_pixel_by = self.get_change_pixel_by()
-            red = min(new_image[0][x_coordinate][y_coordinate][0] * change_pixel_by, 1.0)
-            green = min(new_image[0][x_coordinate][y_coordinate][1] * change_pixel_by, 1.0)
-            blue = min(new_image[0][x_coordinate][y_coordinate][2] * change_pixel_by, 1.0)
-            new_pixel = [red, green, blue]
-            new_image[0][x_coordinate][y_coordinate] = new_pixel # not sure if it is correct way of assigning
-        # End of main logic
-        
-        return new_image
+        l = len(self.change_pixel_by_list)
+        sample = self.change_pixel_by_list + [1.0]
+        probs = [prob/l]*l + [1-prob]
+        temp = numpy.random.choice(sample, size=self.original_image.shape, 
+                                replace=True, p=probs)
+        prod = numpy.multiply(self.original_image, temp)
+        prod[prod>=1.0] = 1.0
+        return prod
 
     def initialize_population(self):
         """TODO: mukha
@@ -65,9 +59,9 @@ class GA:
         original image's pixel by some constant
         multiple.
         """
-        initial_max_pixels_changed = int(self.total_pixel_number * 0.03) # 3% of total pixels changed for initial population
+        initial_prob = 0.03
         for member_count in range(self.population_size):
-            new_member = self.generate_random_modified_image(initial_max_pixels_changed)
+            new_member = self.generate_random_modified_image(initial_prob)
             self.population.append(new_member)
 
     def normalize(self, pred):
@@ -174,13 +168,13 @@ class GA:
         image: numpy array
         """
         prob=0.01
-        for x in range (self.width):
-            for y in range (self.height):
-                if random.uniform(0, 1)<prob:
-                    red = min(image[0][x][y][0] * self.get_change_pixel_by(), 1.0)
-                    green = min(image[0][x][y][1] * self.get_change_pixel_by(), 1.0)
-                    blue = min(image[0][x][y][2] * self.get_change_pixel_by(), 1.0)
-                    image[0][x][y][:]=[red, green, blue]
+        l = len(self.change_pixel_by_list)
+        sample = self.change_pixel_by_list + [1.0]
+        probs = [prob/l]*l + [1-prob]
+        temp = numpy.random.choice(sample, size=image.shape, 
+                                replace=True, p=probs)
+        image = numpy.multiply(image, temp)
+        image[image>=1.0] = 1.0
         return image
 
     def sort(self):
@@ -222,6 +216,7 @@ class GA:
         result=self.sort()
         index=True
         while index!=False:
+            print('Stuck here?')
             parent1=self.selection(result)
             parent2=self.selection(result)
             offspring1=self.crossover(parent1,parent2)
@@ -235,9 +230,10 @@ class GA:
         """TODO: zhanto and aza
         combine all functions together
         """
+        self.initialize_population()
+
         for i in range(self.max_iterations):
             print("Iteration {}".format(i+1))
-            self.initialize_population()
             self.population_fitness()
             if self.check_population():
                 break
@@ -308,9 +304,10 @@ if __name__ == "__main__":
     print("Predicted class is {}".format(class_names[index]))
 
     ga = GA(model, image, 100, 10)
+
     ga.get_perturbations()
 
-    # random_image = ga.generate_random_modified_image()
+    # random_image = ga.generate_random_modified_image(0.03)
     # im = PIL.Image.fromarray((random_image*255.0).astype(numpy.uint8)[0])
     # im.save("random_image.png")
     # # print(ga.get_changed_pixel_coordinates(random_image))
