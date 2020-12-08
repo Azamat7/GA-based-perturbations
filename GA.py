@@ -1,5 +1,6 @@
 import argparse
 import numpy
+import numpy.matlib
 import PIL
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
@@ -44,9 +45,9 @@ class GA:
         l = len(self.change_pixel_by_list)
         sample = self.change_pixel_by_list + [1.0]
         probs = [prob/l]*l + [1-prob]
-        temp = numpy.random.choice(sample, size=self.original_image.shape, 
+        temp = numpy.random.choice(sample, size=(1, self.width, self.height), 
                                 replace=True, p=probs)
-        prod = numpy.multiply(self.original_image, temp)
+        prod = numpy.multiply(self.original_image, temp[..., numpy.newaxis])
         prod[prod>=1.0] = 1.0
         return prod
 
@@ -171,9 +172,9 @@ class GA:
         l = len(self.change_pixel_by_list)
         sample = self.change_pixel_by_list + [1.0]
         probs = [prob/l]*l + [1-prob]
-        temp = numpy.random.choice(sample, size=image.shape, 
+        temp = numpy.random.choice(sample, size=(1, self.width, self.height), 
                                 replace=True, p=probs)
-        image = numpy.multiply(image, temp)
+        image = numpy.multiply(image, temp[..., numpy.newaxis])
         image[image>=1.0] = 1.0
         return image
 
@@ -304,10 +305,11 @@ if __name__ == "__main__":
     print("Predicted class is {}".format(class_names[index]))
 
     ga = GA(model, image, 100, 10)
-
-    ga.get_perturbations()
+    # ga.get_perturbations()
 
     # random_image = ga.generate_random_modified_image(0.03)
+    # print(len(ga.get_changed_pixel_coordinates(random_image)))
+    # print(len(ga.get_changed_pixel_coordinates(ga.original_image)))
     # im = PIL.Image.fromarray((random_image*255.0).astype(numpy.uint8)[0])
     # im.save("random_image.png")
     # # print(ga.get_changed_pixel_coordinates(random_image))
