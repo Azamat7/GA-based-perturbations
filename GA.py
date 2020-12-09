@@ -105,62 +105,23 @@ class GA:
                 return True
         return False
 
-    def get_changed_pixel_coordinates(self, image):
-        """ TODO: mukha
-        retrieves coordinates of the modified pixels
-        """
-        changed_pixels_coordinates = []
+    def count_changed_pixels(self, image):
+        count = 0
         for x_coordinate in range(self.width):
             for y_coordinate in range(self.height):
                 comparison = image[0][x_coordinate][y_coordinate] != self.original_image[0][x_coordinate][y_coordinate]
                 if comparison.any():
-                    changed_pixels_coordinates.append((x_coordinate, y_coordinate))
+                    count += 1
 
-        return changed_pixels_coordinates
+        return count
     
     def crossover(self, image1, image2):
-        """TODO: mukha
-        generates 1 offspring from 2 parents
-        uniformal selection of pixels
-        image: numpy array
-
-        We first create copy of unmodified
-        original image.
-        We select at most maxPixelsChanged
-        number of modified pixels from either
-        parent and add to the offspring.
-        Afterwards, apply mutation and add
-        the offspring to the current population.
         """
-        offspring = numpy.copy(image)
-
-        # Main logic lies here. Modification may be required
-        first_image_modified_pixels = numpy.array(self.get_changed_pixel_coordinates(image1))
-        l1 = len(first_image_modified_pixels)
-        second_image_modified_pixels = numpy.array(self.get_changed_pixel_coordinates(image2))
-        l2 = len(second_image_modified_pixels)
-        for change_count in range(max(l1, l2)):
-            first_or_second = random.randint(0, 1)
-            selected_image = None
-            pixel_coordinate = None
-            selected_pixels = None
-            pixel_index = None
-            if first_or_second == 0: # take pixel from first image
-                selected_pixels = first_image_modified_pixels
-                pixel_index = numpy.random.choice(len(first_image_modified_pixels))
-                selected_image = image1
-            else: # take pixel from second image
-                selected_pixels = second_image_modified_pixels
-                pixel_index = numpy.random.choice(len(second_image_modified_pixels))
-                # pixel_coordinate = numpy.random.choice(second_image_modified_pixels)
-                selected_image = image2
-            pixel_coordinate = selected_pixels[pixel_index]
-            x_coordinate = pixel_coordinate[0]
-            y_coordinate = pixel_coordinate[1]
-            offspring[0][x_coordinate][y_coordinate] = selected_image[0][x_coordinate][y_coordinate]
-        # End of main logic
-
-        self.mutate(offspring)
+        Randomly pick pixels from 2 images
+        """
+        temp = numpy.random.randint(0, 2, (1, self.width, self.height))
+        temp_invert = 1 - temp
+        offspring = numpy.multiply(image1, temp[..., numpy.newaxis]) + numpy.multiply(image2, temp_invert[..., numpy.newaxis])
         return offspring
     
     def mutate(self, image):
@@ -182,17 +143,21 @@ class GA:
         """
         Assumes that self.population is sorted by fitness function
         """
-        for i in range(self.population_size//4):
-            parent1 = self.population[i * 2]
-            parent2 = self.population[i * 2 + 1]
+        indexes = numpy.random.choice(self.population_size // 2, self.population_size // 2)
+        it = iter(indexes)
+        for i in it:
+            parent1 = self.population[i]
+            parent2 = self.population[next(it)]
             offspring = self.crossover(parent1, parent2)
+            if self.count_changed_pixels(offspring) > self.max_pixels_changed:
+                continue
             offspring = self.mutate(offspring)
-            
             self.population.append(offspring)
             self.fitnesses.append(self.compute_fitness(offspring))
 
         generation = sorted(zip(self.population, self.fitnesses), key=lambda x: x[1][1])
         self.population = [x[0] for x in generation[:self.population_size]]
+        print('Confidence:', generation[0][1][1])
     
     def get_perturbations(self):
         """TODO: zhanto and aza
