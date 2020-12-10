@@ -39,7 +39,7 @@ class GA:
         self.true_label = index
 
     def generate_random_modified_image(self, prob):
-        """ TODO: mukha
+        """
         generates new copy of an image with random pixels modified
         """
         l = len(self.change_pixel_by_list)
@@ -52,7 +52,7 @@ class GA:
         return prod
 
     def initialize_population(self):
-        """TODO: mukha
+        """
         generates POPULATION_SIZE number of parents.
         For each new parent, we only change at most
         fixed number of pixels, maxPixelsChanged.
@@ -112,7 +112,6 @@ class GA:
                 comparison = image[0][x_coordinate][y_coordinate] != self.original_image[0][x_coordinate][y_coordinate]
                 if comparison.any():
                     count += 1
-
         return count
     
     def crossover(self, image1, image2):
@@ -125,7 +124,7 @@ class GA:
         return offspring
     
     def mutate(self, image):
-        """TODO: zhans
+        """
         randomly change certain pixels
         image: numpy array
         """
@@ -160,7 +159,7 @@ class GA:
         print('Confidence:', generation[0][1][1])
     
     def get_perturbations(self):
-        """TODO: zhanto and aza
+        """
         combine all functions together
         """
         self.initialize_population()
