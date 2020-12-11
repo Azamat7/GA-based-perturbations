@@ -106,13 +106,8 @@ class GA:
         return False
 
     def count_changed_pixels(self, image):
-        count = 0
-        for x_coordinate in range(self.width):
-            for y_coordinate in range(self.height):
-                comparison = image[0][x_coordinate][y_coordinate] != self.original_image[0][x_coordinate][y_coordinate]
-                if comparison.any():
-                    count += 1
-        return count
+        comparison = (image != self.original_image).any(axis=3)
+        return numpy.count_nonzero(comparison)
     
     def crossover(self, image1, image2):
         """
@@ -176,26 +171,6 @@ class GA:
             im.save("adversarial.png")
         else:
             print("Could not find any adversarial :(")
-    
-class Model:
-    def __init__(self, model, perturbations):
-        """TODO: zhanto and aza
-        1) only perturbations are used for retraining
-        2) train data + perturbations are used for retraining
-        """
-        pass
-    
-    def retrain_model(self):
-        """TODO: zhanto and aza
-        retrain the model with new images
-        """
-        pass
-    
-    def evaluate_model(self):
-        """TODO: zhanto and aza
-        Evaluated on whole test data
-        """
-        pass
 
 if __name__ == "__main__":
     """TODO: zhanto and aza
@@ -239,6 +214,8 @@ if __name__ == "__main__":
     ga.get_perturbations()
 
     # random_image = ga.generate_random_modified_image(0.03)
+    # print(ga.count_changed_pixels(random_image))
+    # print(ga.changed_pixels(random_image))
     # print(len(ga.get_changed_pixel_coordinates(random_image)))
     # print(len(ga.get_changed_pixel_coordinates(ga.original_image)))
     # im = PIL.Image.fromarray((random_image*255.0).astype(numpy.uint8)[0])
