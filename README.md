@@ -36,3 +36,8 @@ Install `requirements` after activating
 ```
 pip3 install -r requirements.txt
 ```
+
+To run
+```
+python GA.py cifar10 automobile10.png 0.1 -p 100
+```

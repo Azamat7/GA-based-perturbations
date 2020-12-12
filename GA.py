@@ -1,4 +1,3 @@
-import argparse
 import numpy
 import numpy.matlib
 import PIL
@@ -6,22 +5,24 @@ import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
 import random
 
+from parser import Parser
+
 class GA:
-    def __init__(self, model, image, threshold, max_iterations):
+    def __init__(self, model, image, population_size, max_iterations, threshold):
         # image: numpy array
         self.original_image = image
         self.image_shape = image.shape
         self.width = self.image_shape[1]
         self.height = self.image_shape[2]
 
-        self.max_percent_changed = 0.1 # 10%
+        self.max_percent_changed = threshold # 10%
         self.total_pixel_number = self.width * self.height
         self.max_pixels_changed = int(self.total_pixel_number * self.max_percent_changed)
 
         self.change_pixel_by_list = [0.1, 0.2, 1.8, 1.9]
 
         self.population = []
-        self.population_size = threshold
+        self.population_size = population_size
         self.max_iterations = max_iterations
 
         self.model = model
@@ -173,31 +174,18 @@ class GA:
             print("Could not find any adversarial :(")
 
 if __name__ == "__main__":
-    """TODO: zhanto and aza
-    uncomment and implement the flow
-    """
-    # parser = argparse.ArgumentParser(description='GA-based adversarial perturbation generator')
-    # parser.add_argument('model_name', type=str,
-    #                 help='Required model name argument')
-    # parser.add_argument('image_name', type=str,
-    #                 help='Required image name argument')
-    # parser.add_argument('threshold', type=float, default=0.1,
-    #                 help='Required threshold for percentage of pixels\
-    #                     that can be changed')
-    # parser.add_argument('-p', '--population_size', type=int, default=25,
-    #                 help="Optional population size argument")
-
-    # args = parser.parse_args()
+    parser = Parser()
+    args = parser.parse_args()
 
     class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer',
                'dog', 'frog', 'horse', 'ship', 'truck']
 
     # Open image as numpy array
-    image = numpy.asarray(PIL.Image.open('automobile10.png'))
+    image = numpy.asarray(PIL.Image.open(args.image_name))
     image = image/255.0
     image = image.reshape(-1, 32, 32, 3)
 
-    model = tf.keras.models.load_model('cifar10')
+    model = tf.keras.models.load_model(args.model_name)
     model.compile(optimizer='adam',
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                 metrics=['accuracy'])
@@ -210,23 +198,5 @@ if __name__ == "__main__":
     index = tf.math.argmax(pred, axis=1).numpy()[0]
     print("Predicted class is {}".format(class_names[index]))
 
-    ga = GA(model, image, 100, 20)
+    ga = GA(model, image, args.population_size, 20, args.threshold)
     ga.get_perturbations()
-
-    # random_image = ga.generate_random_modified_image(0.03)
-    # print(ga.count_changed_pixels(random_image))
-    # print(ga.changed_pixels(random_image))
-    # print(len(ga.get_changed_pixel_coordinates(random_image)))
-    # print(len(ga.get_changed_pixel_coordinates(ga.original_image)))
-    # im = PIL.Image.fromarray((random_image*255.0).astype(numpy.uint8)[0])
-    # im.save("random_image.png")
-    # # print(ga.get_changed_pixel_coordinates(random_image))
-
-    # ga.initialize_population()
-    # print(len(ga.get_changed_pixel_coordinates(ga.population[0])))
-    # print(len(ga.get_changed_pixel_coordinates(ga.population[1])))
-    # offspring = ga.crossover(ga.population[0], ga.population[1])
-    # print(len(ga.get_changed_pixel_coordinates(offspring)))
-    # offspringImage = PIL.Image.fromarray((offspring*255.0).astype(numpy.uint8)[0])
-    # offspringImage.save("random_image_crossover.png")
-    # print(ga.get_changed_pixel_coordinates(offspring))
