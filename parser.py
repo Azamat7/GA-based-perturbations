@@ -9,6 +9,8 @@ class Parser:
             help='Required image name argument')
         self.parser.add_argument('threshold', type=float, default=0.1,
             help='Required threshold for percentage of pixels that can be changed')
+        self.parser.add_argument('iterations', type=int, default=30,
+            help='Required threshold for number of iterations of GA')
         self.parser.add_argument('-p', '--population_size', type=int, default=25,
             help="Optional population size argument")
     

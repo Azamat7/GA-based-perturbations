@@ -11,11 +11,10 @@ class GA:
     def __init__(self, model, image, population_size, max_iterations, threshold):
         # image: numpy array
         self.original_image = image
-        self.image_shape = image.shape
-        self.width = self.image_shape[1]
-        self.height = self.image_shape[2]
+        self.width = image.shape[1]
+        self.height = image.shape[2]
 
-        self.max_percent_changed = threshold # 10%
+        self.max_percent_changed = threshold
         self.total_pixel_number = self.width * self.height
         self.max_pixels_changed = int(self.total_pixel_number * self.max_percent_changed)
 
@@ -27,21 +26,17 @@ class GA:
 
         self.model = model
         self.set_true_label()
-
-    def get_change_pixel_by(self):
-        index = numpy.random.choice(len(self.change_pixel_by_list))
-        return self.change_pixel_by_list[index]
     
     def set_true_label(self):
         """
-        Identifies and stores the original image classification
+        Identifies and stores the true label of image
         """
         index, prob = self.predict(self.original_image)
         self.true_label = index
 
     def generate_random_modified_image(self, prob):
         """
-        generates new copy of an image with random pixels modified
+        Generates a new copy of an image with random pixels modified
         """
         l = len(self.change_pixel_by_list)
         sample = self.change_pixel_by_list + [1.0]
@@ -112,7 +107,7 @@ class GA:
     
     def crossover(self, image1, image2):
         """
-        Randomly pick pixels from 2 images
+        Randomly pick pixels from 2 images (uniform)
         """
         temp = numpy.random.randint(0, 2, (1, self.width, self.height))
         temp_invert = 1 - temp
@@ -138,7 +133,10 @@ class GA:
         """
         Assumes that self.population is sorted by fitness function
         """
-        indexes = numpy.random.choice(self.population_size // 2, self.population_size // 2)
+        if (self.population_size // 2)%2 == 1:
+            indexes = numpy.random.choice(self.population_size // 2, self.population_size // 2 + 1)
+        else:
+            indexes = numpy.random.choice(self.population_size // 2, self.population_size // 2)
         it = iter(indexes)
         for i in it:
             parent1 = self.population[i]
@@ -154,7 +152,7 @@ class GA:
         self.population = [x[0] for x in generation[:self.population_size]]
         print('Confidence:', generation[0][1][1])
     
-    def get_perturbations(self):
+    def get_perturbation(self):
         """
         combine all functions together
         """
@@ -183,20 +181,12 @@ if __name__ == "__main__":
     # Open image as numpy array
     image = numpy.asarray(PIL.Image.open(args.image_name))
     image = image/255.0
-    image = image.reshape(-1, 32, 32, 3)
+    image = image.reshape(-1, 28, 28, 1)
 
     model = tf.keras.models.load_model(args.model_name)
     model.compile(optimizer='adam',
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                 metrics=['accuracy'])
-    
-    # Get prediction
-    pred = model.predict(image)
-    print(pred)
 
-    # Get predicted class name
-    index = tf.math.argmax(pred, axis=1).numpy()[0]
-    print("Predicted class is {}".format(class_names[index]))
-
-    ga = GA(model, image, args.population_size, 20, args.threshold)
-    ga.get_perturbations()
+    ga = GA(model, image, args.population_size, args.iterations, args.threshold)
+    ga.get_perturbation()
