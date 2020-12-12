@@ -18,7 +18,8 @@ class GA:
         self.total_pixel_number = self.width * self.height
         self.max_pixels_changed = int(self.total_pixel_number * self.max_percent_changed)
 
-        self.change_pixel_by_list = [0.1, 0.2, 1.8, 1.9]
+        self.change_pixel_by_list = [0.1, 0.2]
+        self.increment_pixel_by_list = [0.3, 0.4]
 
         self.population = []
         self.population_size = population_size
@@ -38,14 +39,24 @@ class GA:
         """
         Generates a new copy of an image with random pixels modified
         """
-        l = len(self.change_pixel_by_list)
-        sample = self.change_pixel_by_list + [1.0]
-        probs = [prob/l]*l + [1-prob]
-        temp = numpy.random.choice(sample, size=(1, self.width, self.height), 
-                                replace=True, p=probs)
-        prod = numpy.multiply(self.original_image, temp[..., numpy.newaxis])
-        prod[prod>=1.0] = 1.0
-        return prod
+        l1 = len(self.change_pixel_by_list)
+        sample1 = self.change_pixel_by_list + [1.0]
+        probs1 = [prob/l1]*l1 + [1-prob]
+
+        l2 = len(self.increment_pixel_by_list)
+        sample2 = self.increment_pixel_by_list + [0.0]
+        probs2 = [prob/l2]*l2 + [1-prob]
+
+        prod = numpy.random.choice(sample1, size=(1, self.width, self.height), 
+                                replace=True, p=probs1)
+        inc = numpy.random.choice(sample2, size=(1, self.width, self.height), 
+                                replace=True, p=probs2)
+
+        ans = numpy.multiply(self.original_image, prod[..., numpy.newaxis])
+        ans = numpy.add(ans, inc[..., numpy.newaxis])
+        ans[ans>=1.0] = 1.0
+        ans[ans<=0.0] = 0.0
+        return ans
 
     def initialize_population(self):
         """
@@ -56,7 +67,7 @@ class GA:
         original image's pixel by some constant
         multiple.
         """
-        initial_prob = 0.03
+        initial_prob = 0.05
         for member_count in range(self.population_size):
             new_member = self.generate_random_modified_image(initial_prob)
             self.population.append(new_member)
@@ -119,15 +130,25 @@ class GA:
         randomly change certain pixels
         image: numpy array
         """
-        prob=0.01
-        l = len(self.change_pixel_by_list)
-        sample = self.change_pixel_by_list + [1.0]
-        probs = [prob/l]*l + [1-prob]
-        temp = numpy.random.choice(sample, size=(1, self.width, self.height), 
-                                replace=True, p=probs)
-        image = numpy.multiply(image, temp[..., numpy.newaxis])
-        image[image>=1.0] = 1.0
-        return image
+        prob=0.03
+        l1 = len(self.change_pixel_by_list)
+        sample1 = self.change_pixel_by_list + [1.0]
+        probs1 = [prob/l1]*l1 + [1-prob]
+
+        l2 = len(self.increment_pixel_by_list)
+        sample2 = self.increment_pixel_by_list + [0.0]
+        probs2 = [prob/l2]*l2 + [1-prob]
+
+        prod = numpy.random.choice(sample1, size=(1, self.width, self.height), 
+                                replace=True, p=probs1)
+        inc = numpy.random.choice(sample2, size=(1, self.width, self.height), 
+                                replace=True, p=probs2)
+
+        ans = numpy.multiply(image, prod[..., numpy.newaxis])
+        ans = numpy.add(ans, inc[..., numpy.newaxis])
+        ans[ans>=1.0] = 1.0
+        ans[ans<=0.0] = 0.0
+        return ans
 
     def next_generation(self):
         """
@@ -166,7 +187,7 @@ class GA:
             self.next_generation()
         
         if hasattr(self, 'adversarial'):
-            im = PIL.Image.fromarray((self.adversarial*255.0).astype(numpy.uint8)[0])
+            im = PIL.Image.fromarray((self.adversarial*255.0).astype(numpy.uint8).reshape((28,28)))
             im.save("adversarial.png")
         else:
             print("Could not find any adversarial :(")
